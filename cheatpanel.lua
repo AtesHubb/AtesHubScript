@@ -5,33 +5,44 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
-local infinityJumpEnabled = false
-
 -- Loading Screen
 local loadingGui = Instance.new("ScreenGui")
 loadingGui.Name = "LoadingScreen"
 loadingGui.Parent = playerGui
 
 local loadingFrame = Instance.new("Frame")
-loadingFrame.Size = UDim2.new(0, 250, 0, 50)
-loadingFrame.Position = UDim2.new(0.5, -125, 0.5, -25)
-loadingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-loadingFrame.BackgroundTransparency = 0.1
-loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+loadingFrame.Size = UDim2.new(0, 300, 0, 80)
+loadingFrame.Position = UDim2.new(0.5, -150, 0.5, -40)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 loadingFrame.BorderSizePixel = 0
+loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 loadingFrame.Parent = loadingGui
 loadingFrame.ClipsDescendants = true
-loadingFrame.ZIndex = 10
-loadingFrame.Rotation = 3
+
+-- Loading Text
+local loadingText = Instance.new("TextLabel")
+loadingText.Size = UDim2.new(1, -20, 0, 40)
+loadingText.Position = UDim2.new(0, 10, 0, 10)
+loadingText.BackgroundTransparency = 1
+loadingText.Text = "Loading... Hold Right Ctrl to open menu"
+loadingText.TextColor3 = Color3.fromRGB(220, 220, 220)
+loadingText.Font = Enum.Font.GothamBold
+loadingText.TextSize = 18
+loadingText.Parent = loadingFrame
+loadingText.TextWrapped = true
+loadingText.TextXAlignment = Enum.TextXAlignment.Center
+loadingText.TextYAlignment = Enum.TextYAlignment.Center
 
 -- Progress Bar Background
 local progressBarBG = Instance.new("Frame")
-progressBarBG.Size = UDim2.new(0.9, 0, 0.3, 0)
-progressBarBG.Position = UDim2.new(0.05, 0, 0.6, 0)
+progressBarBG.Size = UDim2.new(0.9, 0, 0, 20)
+progressBarBG.Position = UDim2.new(0.05, 0, 0, 50)
 progressBarBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 progressBarBG.BorderSizePixel = 0
 progressBarBG.Parent = loadingFrame
 progressBarBG.AnchorPoint = Vector2.new(0, 0)
+progressBarBG.ClipsDescendants = true
+progressBarBG.Rotation = 0
 
 -- Progress Bar Fill
 local progressBar = Instance.new("Frame")
@@ -42,26 +53,15 @@ progressBar.BorderSizePixel = 0
 progressBar.Parent = progressBarBG
 progressBar.AnchorPoint = Vector2.new(0, 0)
 
--- Loading Text
-local loadingText = Instance.new("TextLabel")
-loadingText.Size = UDim2.new(1, 0, 0.6, 0)
-loadingText.Position = UDim2.new(0, 0, 0, 0)
-loadingText.BackgroundTransparency = 1
-loadingText.Text = "Loading... Hold Right Ctrl to open menu"
-loadingText.TextColor3 = Color3.fromRGB(230, 230, 230)
-loadingText.Font = Enum.Font.GothamBold
-loadingText.TextSize = 18
-loadingText.Parent = loadingFrame
-loadingText.TextWrapped = true
-loadingText.TextXAlignment = Enum.TextXAlignment.Center
-loadingText.TextYAlignment = Enum.TextYAlignment.Center
-
--- RGB effect for progressBar
+-- RGB color cycling for progress bar
 local hue = 0
-local runConnection
-runConnection = RunService.Heartbeat:Connect(function()
+local progressRunning = true
+local runConnection = RunService.Heartbeat:Connect(function()
     hue = (hue + 2) % 360
     progressBar.BackgroundColor3 = Color3.fromHSV(hue / 360, 1, 1)
+    if not progressRunning then
+        runConnection:Disconnect()
+    end
 end)
 
 -- Animate progress bar fill
@@ -71,26 +71,35 @@ coroutine.wrap(function()
         wait(0.02)
     end
     wait(0.3)
+    progressRunning = false
     loadingGui:Destroy()
-    runConnection:Disconnect()
     gui.Enabled = false
 end)()
 
--- Main GUI (Başlangıçta kapalı)
+-- Main GUI (başlangıçta kapalı)
 local gui = Instance.new("ScreenGui")
 gui.Name = "AtesHub"
 gui.Parent = playerGui
 gui.Enabled = false
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 260, 0, 140)
+frame.Size = UDim2.new(0, 300, 0, 150)
 frame.Position = UDim2.new(0, 10, 1, -160)
 frame.BorderSizePixel = 0
 frame.Parent = gui
 frame.Active = true
 frame.Draggable = true
 
-local guiHue = 0 -- GUI renk döngüsü için
+local guiHue = 0 -- RGB döngü için
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundTransparency = 1
+title.Text = "Ates Hub"
+title.TextColor3 = Color3.fromRGB(255, 255, 255) -- Bu renk RunService ile RGB olacak
+title.Font = Enum.Font.GothamBold
+title.TextSize = 26
+title.Parent = frame
 
 RunService.Heartbeat:Connect(function()
     guiHue = (guiHue + 1) % 360
@@ -99,69 +108,61 @@ RunService.Heartbeat:Connect(function()
     title.TextColor3 = color
 end)
 
--- Title
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "Ates Hub"
-title.TextColor3 = Color3.fromRGB(255, 255, 255) -- başlangıç rengi, üstte sürekli değişecek
-title.Font = Enum.Font.GothamBold
-title.TextSize = 24
-title.Parent = frame
-
 -- WalkSpeed Label
 local speedLabel = Instance.new("TextLabel")
-speedLabel.Position = UDim2.new(0, 15, 0, 45)
-speedLabel.Size = UDim2.new(0, 90, 0, 20)
+speedLabel.Position = UDim2.new(0, 15, 0, 50)
+speedLabel.Size = UDim2.new(0, 90, 0, 25)
 speedLabel.BackgroundTransparency = 1
 speedLabel.Text = "WalkSpeed:"
 speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedLabel.Font = Enum.Font.SourceSansSemibold
-speedLabel.TextSize = 18
+speedLabel.TextSize = 20
 speedLabel.TextXAlignment = Enum.TextXAlignment.Left
 speedLabel.Parent = frame
 
 -- WalkSpeed TextBox
 local speedBox = Instance.new("TextBox")
-speedBox.Position = UDim2.new(0, 110, 0, 45)
-speedBox.Size = UDim2.new(0, 120, 0, 20)
-speedBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+speedBox.Position = UDim2.new(0, 110, 0, 50)
+speedBox.Size = UDim2.new(0, 170, 0, 25)
+speedBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedBox.Font = Enum.Font.SourceSans
-speedBox.TextSize = 18
+speedBox.TextSize = 20
 speedBox.ClearTextOnFocus = false
-speedBox.Text = tostring(16) -- default walkspeed
+speedBox.Text = tostring(16)
 speedBox.Parent = frame
 
--- Infinity Jump Checkbox Label
+-- Infinity Jump Label
 local infLabel = Instance.new("TextLabel")
-infLabel.Position = UDim2.new(0, 15, 0, 80)
-infLabel.Size = UDim2.new(0, 140, 0, 20)
+infLabel.Position = UDim2.new(0, 15, 0, 90)
+infLabel.Size = UDim2.new(0, 140, 0, 25)
 infLabel.BackgroundTransparency = 1
 infLabel.Text = "Infinity Jump:"
 infLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 infLabel.Font = Enum.Font.SourceSansSemibold
-infLabel.TextSize = 18
+infLabel.TextSize = 20
 infLabel.TextXAlignment = Enum.TextXAlignment.Left
 infLabel.Parent = frame
 
--- Infinity Jump Checkbox (simple toggle)
+-- Infinity Jump Toggle Button
 local infToggle = Instance.new("TextButton")
-infToggle.Position = UDim2.new(0, 160, 0, 80)
-infToggle.Size = UDim2.new(0, 70, 0, 20)
-infToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+infToggle.Position = UDim2.new(0, 160, 0, 90)
+infToggle.Size = UDim2.new(0, 120, 0, 25)
+infToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 infToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 infToggle.Font = Enum.Font.SourceSansBold
-infToggle.TextSize = 18
+infToggle.TextSize = 20
 infToggle.Text = "OFF"
 infToggle.Parent = frame
+
+local infinityJumpEnabled = false
 
 infToggle.MouseButton1Click:Connect(function()
     infinityJumpEnabled = not infinityJumpEnabled
     infToggle.Text = infinityJumpEnabled and "ON" or "OFF"
 end)
 
--- WalkSpeed change handler
+-- WalkSpeed değişikliği
 speedBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local val = tonumber(speedBox.Text)
@@ -174,6 +175,7 @@ speedBox.FocusLost:Connect(function(enterPressed)
                 end
             end
         else
+            -- Geçersiz değer girilirse eski değeri geri koy
             local character = player.Character
             if character then
                 local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -202,7 +204,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- Right Ctrl key toggle GUI visibility
+-- Sağ Ctrl ile GUI aç/kapa
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.RightControl then
         gui.Enabled = not gui.Enabled
