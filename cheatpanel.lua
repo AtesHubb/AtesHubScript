@@ -5,7 +5,6 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Infinity jump toggle
 local infinityJumpEnabled = false
 
 -- Loading Screen
@@ -14,39 +13,58 @@ loadingGui.Name = "LoadingScreen"
 loadingGui.Parent = playerGui
 
 local loadingFrame = Instance.new("Frame")
-loadingFrame.Size = UDim2.new(0, 220, 0, 35)
-loadingFrame.Position = UDim2.new(0.5, -110, 0.5, -17)
-loadingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-loadingFrame.BackgroundTransparency = 0.7
+loadingFrame.Size = UDim2.new(0, 250, 0, 50)
+loadingFrame.Position = UDim2.new(0.5, -125, 0.5, -25)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+loadingFrame.BackgroundTransparency = 0.1
 loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-loadingFrame.Parent = loadingGui
 loadingFrame.BorderSizePixel = 0
+loadingFrame.Parent = loadingGui
 loadingFrame.ClipsDescendants = true
+loadingFrame.ZIndex = 10
+loadingFrame.Rotation = 3
 
+-- Progress Bar Background
+local progressBarBG = Instance.new("Frame")
+progressBarBG.Size = UDim2.new(0.9, 0, 0.3, 0)
+progressBarBG.Position = UDim2.new(0.05, 0, 0.6, 0)
+progressBarBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+progressBarBG.BorderSizePixel = 0
+progressBarBG.Parent = loadingFrame
+progressBarBG.AnchorPoint = Vector2.new(0, 0)
+
+-- Progress Bar Fill
 local progressBar = Instance.new("Frame")
 progressBar.Size = UDim2.new(0, 0, 1, 0)
+progressBar.Position = UDim2.new(0, 0, 0, 0)
 progressBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-progressBar.Parent = loadingFrame
 progressBar.BorderSizePixel = 0
+progressBar.Parent = progressBarBG
+progressBar.AnchorPoint = Vector2.new(0, 0)
 
+-- Loading Text
 local loadingText = Instance.new("TextLabel")
-loadingText.Size = UDim2.new(1, 0, 1, 0)
+loadingText.Size = UDim2.new(1, 0, 0.6, 0)
+loadingText.Position = UDim2.new(0, 0, 0, 0)
 loadingText.BackgroundTransparency = 1
 loadingText.Text = "Loading... Hold Right Ctrl to open menu"
-loadingText.TextColor3 = Color3.fromRGB(220, 220, 220)
-loadingText.Font = Enum.Font.SourceSansSemibold
-loadingText.TextSize = 16
+loadingText.TextColor3 = Color3.fromRGB(230, 230, 230)
+loadingText.Font = Enum.Font.GothamBold
+loadingText.TextSize = 18
 loadingText.Parent = loadingFrame
+loadingText.TextWrapped = true
+loadingText.TextXAlignment = Enum.TextXAlignment.Center
+loadingText.TextYAlignment = Enum.TextYAlignment.Center
 
 -- RGB effect for progressBar
 local hue = 0
 local runConnection
 runConnection = RunService.Heartbeat:Connect(function()
-    hue = (hue + 1) % 360
-    progressBar.BackgroundColor3 = Color3.fromHSV(hue/360, 1, 1)
+    hue = (hue + 2) % 360
+    progressBar.BackgroundColor3 = Color3.fromHSV(hue / 360, 1, 1)
 end)
 
--- Progress bar fill animation (fast)
+-- Animate progress bar fill
 coroutine.wrap(function()
     for i = 0, 1, 0.02 do
         progressBar.Size = UDim2.new(i, 0, 1, 0)
@@ -67,18 +85,26 @@ gui.Enabled = false
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 260, 0, 140)
 frame.Position = UDim2.new(0, 10, 1, -160)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.Parent = gui
 frame.Active = true
 frame.Draggable = true
+
+local guiHue = 0 -- GUI renk döngüsü için
+
+RunService.Heartbeat:Connect(function()
+    guiHue = (guiHue + 1) % 360
+    local color = Color3.fromHSV(guiHue / 360, 1, 0.7)
+    frame.BackgroundColor3 = color
+    title.TextColor3 = color
+end)
 
 -- Title
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundTransparency = 1
 title.Text = "Ates Hub"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextColor3 = Color3.fromRGB(255, 255, 255) -- başlangıç rengi, üstte sürekli değişecek
 title.Font = Enum.Font.GothamBold
 title.TextSize = 24
 title.Parent = frame
@@ -148,7 +174,17 @@ speedBox.FocusLost:Connect(function(enterPressed)
                 end
             end
         else
-            speedBox.Text = tostring(humanoid.WalkSpeed)
+            local character = player.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    speedBox.Text = tostring(humanoid.WalkSpeed)
+                else
+                    speedBox.Text = "16"
+                end
+            else
+                speedBox.Text = "16"
+            end
         end
     end
 end)
