@@ -5,164 +5,156 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Loading Screen
-local loadingGui = Instance.new("ScreenGui")
+-- Loading ekranı (küçük kutucuk içinde)
+local loadingGui = Instance.new("ScreenGui", playerGui)
 loadingGui.Name = "LoadingScreen"
-loadingGui.Parent = playerGui
 
-local loadingFrame = Instance.new("Frame")
+local loadingFrame = Instance.new("Frame", loadingGui)
 loadingFrame.Size = UDim2.new(0, 300, 0, 80)
 loadingFrame.Position = UDim2.new(0.5, -150, 0.5, -40)
-loadingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-loadingFrame.BorderSizePixel = 0
+loadingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+loadingFrame.BackgroundTransparency = 0.3
+loadingFrame.BorderSizePixel = 2
+loadingFrame.BorderColor3 = Color3.new(0,0,0)
 loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-loadingFrame.Parent = loadingGui
-loadingFrame.ClipsDescendants = true
 
--- Loading Text
-local loadingText = Instance.new("TextLabel")
+local loadingText = Instance.new("TextLabel", loadingFrame)
 loadingText.Size = UDim2.new(1, -20, 0, 40)
 loadingText.Position = UDim2.new(0, 10, 0, 10)
 loadingText.BackgroundTransparency = 1
 loadingText.Text = "Loading... Hold Right Ctrl to open menu"
-loadingText.TextColor3 = Color3.fromRGB(220, 220, 220)
+loadingText.TextColor3 = Color3.fromRGB(230, 230, 230)
 loadingText.Font = Enum.Font.GothamBold
 loadingText.TextSize = 18
-loadingText.Parent = loadingFrame
 loadingText.TextWrapped = true
 loadingText.TextXAlignment = Enum.TextXAlignment.Center
 loadingText.TextYAlignment = Enum.TextYAlignment.Center
 
--- Progress Bar Background
-local progressBarBG = Instance.new("Frame")
+local progressBarBG = Instance.new("Frame", loadingFrame)
 progressBarBG.Size = UDim2.new(0.9, 0, 0, 20)
 progressBarBG.Position = UDim2.new(0.05, 0, 0, 50)
-progressBarBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+progressBarBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 progressBarBG.BorderSizePixel = 0
-progressBarBG.Parent = loadingFrame
-progressBarBG.AnchorPoint = Vector2.new(0, 0)
 progressBarBG.ClipsDescendants = true
-progressBarBG.Rotation = 0
 
--- Progress Bar Fill
-local progressBar = Instance.new("Frame")
+local progressBar = Instance.new("Frame", progressBarBG)
 progressBar.Size = UDim2.new(0, 0, 1, 0)
 progressBar.Position = UDim2.new(0, 0, 0, 0)
-progressBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+progressBar.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
 progressBar.BorderSizePixel = 0
-progressBar.Parent = progressBarBG
-progressBar.AnchorPoint = Vector2.new(0, 0)
 
--- RGB color cycling for progress bar
-local hue = 0
-local progressRunning = true
-local runConnection = RunService.Heartbeat:Connect(function()
-    hue = (hue + 2) % 360
-    progressBar.BackgroundColor3 = Color3.fromHSV(hue / 360, 1, 1)
-    if not progressRunning then
-        runConnection:Disconnect()
-    end
-end)
-
--- Animate progress bar fill
+-- Animate progress bar dolumu
 coroutine.wrap(function()
     for i = 0, 1, 0.02 do
         progressBar.Size = UDim2.new(i, 0, 1, 0)
         wait(0.02)
     end
     wait(0.3)
-    progressRunning = false
     loadingGui:Destroy()
     gui.Enabled = false
 end)()
 
--- Main GUI (başlangıçta kapalı)
-local gui = Instance.new("ScreenGui")
+-- Ana GUI
+local gui = Instance.new("ScreenGui", playerGui)
 gui.Name = "AtesHub"
-gui.Parent = playerGui
 gui.Enabled = false
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 150)
-frame.Position = UDim2.new(0, 10, 1, -160)
-frame.BorderSizePixel = 0
-frame.Parent = gui
-frame.Active = true
-frame.Draggable = true
+local mainFrame = Instance.new("Frame", gui)
+mainFrame.Size = UDim2.new(0, 350, 0, 220)
+mainFrame.Position = UDim2.new(0, 10, 1, -230)
+mainFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+mainFrame.BackgroundTransparency = 0.3
+mainFrame.BorderSizePixel = 2
+mainFrame.BorderColor3 = Color3.new(0,0,0)
+mainFrame.Active = true
+mainFrame.Draggable = true
 
-local guiHue = 0 -- RGB döngü için
+-- Solda sekme çubuğu
+local tabFrame = Instance.new("Frame", mainFrame)
+tabFrame.Size = UDim2.new(0, 80, 1, 0)
+tabFrame.Position = UDim2.new(0,0,0,0)
+tabFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+tabFrame.BackgroundTransparency = 0.2
+tabFrame.BorderSizePixel = 0
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 35)
-title.BackgroundTransparency = 1
-title.Text = "Ates Hub"
-title.TextColor3 = Color3.fromRGB(255, 255, 255) -- Bu renk RunService ile RGB olacak
-title.Font = Enum.Font.GothamBold
-title.TextSize = 26
-title.Parent = frame
+local tabs = {"Main", "ESP"}
+local buttons = {}
+local contentFrames = {}
 
-RunService.Heartbeat:Connect(function()
-    guiHue = (guiHue + 1) % 360
-    local color = Color3.fromHSV(guiHue / 360, 1, 0.7)
-    frame.BackgroundColor3 = color
-    title.TextColor3 = color
-end)
+for i, tabName in ipairs(tabs) do
+    local btn = Instance.new("TextButton", tabFrame)
+    btn.Size = UDim2.new(1, -10, 0, 40)
+    btn.Position = UDim2.new(0, 5, 0, (i-1)*45 + 10)
+    btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    btn.BackgroundTransparency = 0.1
+    btn.Text = tabName
+    btn.TextColor3 = Color3.fromRGB(220,220,220)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 20
+    btn.AutoButtonColor = false
+    buttons[i] = btn
+
+    local content = Instance.new("Frame", mainFrame)
+    content.Size = UDim2.new(1, -90, 1, -20)
+    content.Position = UDim2.new(0, 85, 0, 10)
+    content.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    content.BackgroundTransparency = 0.4
+    content.BorderSizePixel = 0
+    content.Visible = false
+    contentFrames[i] = content
+end
+
+-- Sekme geçiş animasyonu ve logic
+local currentTab = 1
+contentFrames[currentTab].Visible = true
+buttons[currentTab].BackgroundColor3 = Color3.fromRGB(70,70,70)
+
+local function switchTab(newTab)
+    if newTab == currentTab then return end
+    buttons[currentTab].BackgroundColor3 = Color3.fromRGB(40,40,40)
+    contentFrames[currentTab].Visible = false
+
+    currentTab = newTab
+    buttons[currentTab].BackgroundColor3 = Color3.fromRGB(70,70,70)
+    contentFrames[currentTab].Visible = true
+    -- Animasyon basit fade-in yapalım
+    contentFrames[currentTab].BackgroundTransparency = 1
+    for i=1, 10 do
+        contentFrames[currentTab].BackgroundTransparency = contentFrames[currentTab].BackgroundTransparency - 0.04
+        wait(0.03)
+    end
+end
+
+for i, btn in ipairs(buttons) do
+    btn.MouseButton1Click:Connect(function()
+        switchTab(i)
+    end)
+end
+
+-- Main Sekmesi: WalkSpeed ve Infinity Jump
 
 -- WalkSpeed Label
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Position = UDim2.new(0, 15, 0, 50)
-speedLabel.Size = UDim2.new(0, 90, 0, 25)
+local speedLabel = Instance.new("TextLabel", contentFrames[1])
+speedLabel.Position = UDim2.new(0, 10, 0, 20)
+speedLabel.Size = UDim2.new(0, 100, 0, 25)
 speedLabel.BackgroundTransparency = 1
 speedLabel.Text = "WalkSpeed:"
 speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedLabel.Font = Enum.Font.SourceSansSemibold
 speedLabel.TextSize = 20
 speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-speedLabel.Parent = frame
 
 -- WalkSpeed TextBox
-local speedBox = Instance.new("TextBox")
-speedBox.Position = UDim2.new(0, 110, 0, 50)
-speedBox.Size = UDim2.new(0, 170, 0, 25)
+local speedBox = Instance.new("TextBox", contentFrames[1])
+speedBox.Position = UDim2.new(0, 120, 0, 20)
+speedBox.Size = UDim2.new(0, 180, 0, 25)
 speedBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedBox.Font = Enum.Font.SourceSans
 speedBox.TextSize = 20
 speedBox.ClearTextOnFocus = false
 speedBox.Text = tostring(16)
-speedBox.Parent = frame
 
--- Infinity Jump Label
-local infLabel = Instance.new("TextLabel")
-infLabel.Position = UDim2.new(0, 15, 0, 90)
-infLabel.Size = UDim2.new(0, 140, 0, 25)
-infLabel.BackgroundTransparency = 1
-infLabel.Text = "Infinity Jump:"
-infLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-infLabel.Font = Enum.Font.SourceSansSemibold
-infLabel.TextSize = 20
-infLabel.TextXAlignment = Enum.TextXAlignment.Left
-infLabel.Parent = frame
-
--- Infinity Jump Toggle Button
-local infToggle = Instance.new("TextButton")
-infToggle.Position = UDim2.new(0, 160, 0, 90)
-infToggle.Size = UDim2.new(0, 120, 0, 25)
-infToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-infToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-infToggle.Font = Enum.Font.SourceSansBold
-infToggle.TextSize = 20
-infToggle.Text = "OFF"
-infToggle.Parent = frame
-
-local infinityJumpEnabled = false
-
-infToggle.MouseButton1Click:Connect(function()
-    infinityJumpEnabled = not infinityJumpEnabled
-    infToggle.Text = infinityJumpEnabled and "ON" or "OFF"
-end)
-
--- WalkSpeed değişikliği
 speedBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local val = tonumber(speedBox.Text)
@@ -175,23 +167,39 @@ speedBox.FocusLost:Connect(function(enterPressed)
                 end
             end
         else
-            -- Geçersiz değer girilirse eski değeri geri koy
-            local character = player.Character
-            if character then
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    speedBox.Text = tostring(humanoid.WalkSpeed)
-                else
-                    speedBox.Text = "16"
-                end
-            else
-                speedBox.Text = "16"
-            end
+            speedBox.Text = "16"
         end
     end
 end)
 
--- Infinity jump logic
+-- Infinity Jump Label
+local infLabel = Instance.new("TextLabel", contentFrames[1])
+infLabel.Position = UDim2.new(0, 10, 0, 60)
+infLabel.Size = UDim2.new(0, 140, 0, 25)
+infLabel.BackgroundTransparency = 1
+infLabel.Text = "Infinity Jump:"
+infLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+infLabel.Font = Enum.Font.SourceSansSemibold
+infLabel.TextSize = 20
+infLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Infinity Jump Toggle Button
+local infToggle = Instance.new("TextButton", contentFrames[1])
+infToggle.Position = UDim2.new(0, 150, 0, 60)
+infToggle.Size = UDim2.new(0, 150, 0, 25)
+infToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+infToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+infToggle.Font = Enum.Font.SourceSansBold
+infToggle.TextSize = 20
+infToggle.Text = "OFF"
+
+local infinityJumpEnabled = false
+
+infToggle.MouseButton1Click:Connect(function()
+    infinityJumpEnabled = not infinityJumpEnabled
+    infToggle.Text = infinityJumpEnabled and "ON" or "OFF"
+end)
+
 UserInputService.JumpRequest:Connect(function()
     if infinityJumpEnabled then
         local char = player.Character
@@ -202,6 +210,83 @@ UserInputService.JumpRequest:Connect(function()
             end
         end
     end
+end)
+
+-- ESP Sekmesi
+
+local espEnabled = false
+
+local espToggle = Instance.new("TextButton", contentFrames[2])
+espToggle.Position = UDim2.new(0, 10, 0, 20)
+espToggle.Size = UDim2.new(0, 150, 0, 30)
+espToggle.BackgroundColor3 = Color3.fromRGB(80,80,80)
+espToggle.TextColor3 = Color3.fromRGB(255,255,255)
+espToggle.Font = Enum.Font.SourceSansBold
+espToggle.TextSize = 22
+espToggle.Text = "Toggle ESP"
+
+local espBoxes = {}
+
+local function createBox(player)
+    local box = Instance.new("BoxHandleAdornment")
+    box.Adornee = nil
+    box.AlwaysOnTop = true
+    box.ZIndex = 10
+    box.Size = Vector3.new(4, 6, 1)
+    box.Transparency = 0.5
+    box.Color3 = Color3.fromRGB(255, 0, 0)
+    box.Parent = workspace.CurrentCamera
+    espBoxes[player] = box
+end
+
+local function removeBox(player)
+    if espBoxes[player] then
+        espBoxes[player]:Destroy()
+        espBoxes[player] = nil
+    end
+end
+
+local function updateBoxes()
+    for plr, box in pairs(espBoxes) do
+        local char = plr.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            box.Adornee = char.HumanoidRootPart
+        else
+            box.Adornee = nil
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    if espEnabled then
+        updateBoxes()
+    end
+end)
+
+espToggle.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espToggle.Text = espEnabled and "ESP ON" or "ESP OFF"
+    if espEnabled then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= player then
+                createBox(plr)
+            end
+        end
+    else
+        for _, plr in pairs(Players:GetPlayers()) do
+            removeBox(plr)
+        end
+    end
+end)
+
+Players.PlayerAdded:Connect(function(plr)
+    if espEnabled and plr ~= player then
+        createBox(plr)
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+    removeBox(plr)
 end)
 
 -- Sağ Ctrl ile GUI aç/kapa
